@@ -451,7 +451,7 @@
 
             const totalPL = scPL + spPL + hedgePL;
 
-            // Results UI
+            // Results UI 1
             const plElem = document.getElementById('totalPL');
             plElem.innerText = "₹ " + Math.round(totalPL).toLocaleString();
             plElem.className = "big-pl " + (totalPL >= 0 ? "val-green" : "val-red");

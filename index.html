@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Nifty MTM Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nifty Option Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -16,28 +16,31 @@
             --border: #e5e7eb;
         }
 
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
-            gap: 20px;
             height: 100vh;
-            box-sizing: border-box;
+            overflow: hidden; /* Prevent body scroll, handle in containers */
         }
 
-        /* Layout */
+        /* --- DESKTOP LAYOUT (Default) --- */
         .sidebar {
             width: 320px;
             background: var(--card-bg);
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid var(--border);
             overflow-y: auto;
             flex-shrink: 0;
-            border: 1px solid var(--border);
+            height: 100%;
         }
 
         .main {
@@ -45,45 +48,108 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            padding: 20px;
             overflow-y: auto;
+            height: 100%;
         }
 
-        /* Inputs & Typography */
+        /* --- MOBILE LAYOUT (Responsive) --- */
+        @media screen and (max-width: 768px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 15px;
+            }
+
+            .main {
+                width: 100%;
+                height: auto;
+                padding: 15px;
+                overflow: visible;
+            }
+
+            /* Make inputs bigger for touch */
+            input[type="number"], select {
+                padding: 12px;
+                font-size: 16px; /* Prevents zoom on iPhone */
+            }
+
+            input[type="range"] {
+                height: 25px; /* Easier to grab */
+            }
+
+            /* Stack Simulation Panels */
+            .sim-panel {
+                grid-template-columns: 1fr !important; 
+            }
+
+            /* Stack Results Grid */
+            .results-grid {
+                grid-template-columns: 1fr 1fr !important; /* 2 cols on mobile */
+            }
+
+            /* Full width Result Card on very small screens */
+            @media screen and (max-width: 480px) {
+                .results-grid {
+                    grid-template-columns: 1fr !important; /* 1 col on small phones */
+                }
+            }
+
+            h1, h2 { font-size: 1.2rem; }
+        }
+
+        /* Typography & Inputs */
         h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 8px; color: #374151; }
-        h3 { font-size: 0.95rem; margin: 15px 0 8px 0; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        h3 { font-size: 0.9rem; margin: 15px 0 8px 0; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
         
-        label { display: block; font-size: 0.85rem; margin-bottom: 4px; font-weight: 500; }
+        label { display: block; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; color: #4b5563; }
+        
         input[type="number"] {
             width: 100%;
-            padding: 8px 10px;
+            padding: 10px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-            font-size: 0.9rem;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f9fafb;
+            font-size: 0.95rem;
         }
-        
-        input[type="range"] { width: 100%; accent-color: var(--primary); margin: 10px 0; }
 
-        /* Simulation Controls */
+        input[type="range"] { width: 100%; accent-color: var(--primary); margin: 15px 0; }
+
+        /* Panels */
         .sim-panel {
             background: var(--card-bg);
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr 1fr 1fr; /* Desktop default */
+            gap: 15px;
+            border: 1px solid var(--border);
         }
 
-        .sim-control { background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-        .sim-value { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        .sim-control { 
+            background: #f8fafc; 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0; 
+        }
 
-        /* Results Area */
+        .sim-value { font-size: 1.1rem; font-weight: bold; color: var(--primary); margin-top: 5px; }
+
+        /* Results */
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(4, 1fr); /* Desktop default */
+            gap: 12px;
         }
 
         .result-card {
@@ -92,28 +158,48 @@
             border-radius: 10px;
             border: 1px solid var(--border);
             text-align: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        .big-pl { font-size: 1.8rem; font-weight: 800; margin: 5px 0; }
-        .sub-text { font-size: 0.8rem; color: #6b7280; }
-        
+        .big-pl { font-size: 1.5rem; font-weight: 800; margin: 5px 0; word-wrap: break-word; }
+        .sub-text { font-size: 0.75rem; color: #6b7280; }
         .val-green { color: var(--green); }
         .val-red { color: var(--red); }
 
-        /* Chart Area */
+        /* Chart */
         .chart-container {
             background: var(--card-bg);
-            padding: 20px;
+            padding: 10px;
             border-radius: 12px;
-            flex-grow: 1;
-            min-height: 300px;
+            border: 1px solid var(--border);
+            min-height: 250px; /* Reduced for mobile */
             position: relative;
         }
 
-        /* Utilities */
+        /* Toggle & Utilities */
         .hidden { display: none; }
-        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; background: #eef2ff; padding: 8px; border-radius: 6px; }
-        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        
+        .toggle-btn {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            user-select: none;
+        }
+
+        .badge { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+        }
         .badge-green { background: #d1fae5; color: #065f46; }
         .badge-red { background: #fee2e2; color: #991b1b; }
 
@@ -122,116 +208,141 @@
 <body>
 
     <div class="sidebar">
-        <h2>📝 Trade Setup (Entry)</h2>
+        <h2>⚙️ Trade Setup</h2>
 
-        <h3>Market Data at Entry</h3>
-        <label>Entry Spot Price</label>
-        <input type="number" id="entrySpot" value="25088">
-        
-        <label>Total Days to Expiry</label>
-        <input type="number" id="totalDays" value="5">
-        
-        <label>Implied Volatility (IV %)</label>
-        <input type="number" id="entryIV" value="14.0" step="0.1">
-
-        <h3>Positions</h3>
-        <label>Lot Size</label>
-        <input type="number" id="lotSize" value="65">
-
-        <div style="background: #fff1f2; padding: 10px; border-radius: 6px; border: 1px solid #fecdd3; margin-bottom: 10px;">
-            <strong style="color: #9f1239;">🔴 Short Strangle (Sell)</strong>
-            <label>Sell Call Strike</label>
-            <input type="number" id="scStrike" value="25700">
-            <label>Entry Premium (₹)</label>
-            <input type="number" id="scPrem" value="50">
-
-            <label>Sell Put Strike</label>
-            <input type="number" id="spStrike" value="24500">
-            <label>Entry Premium (₹)</label>
-            <input type="number" id="spPrem" value="55">
+        <div style="margin-bottom: 20px;">
+            <label>Entry Spot Price</label>
+            <input type="number" id="entrySpot" value="25088">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Days to Expiry</label>
+                    <input type="number" id="totalDays" value="5">
+                </div>
+                <div style="flex: 1;">
+                    <label>Entry IV %</label>
+                    <input type="number" id="entryIV" value="14.0" step="0.1">
+                </div>
+            </div>
+            <label>Lot Size</label>
+            <input type="number" id="lotSize" value="65">
         </div>
 
-        <div class="checkbox-wrapper">
-            <input type="checkbox" id="useHedge" onchange="toggleHedge()">
-            <label for="useHedge" style="margin:0; cursor:pointer;">Enable Iron Condor (Hedge)</label>
+        <h3 style="color: #9f1239;">🔴 Sell Positions (Short)</h3>
+        <div style="background: #fff1f2; padding: 15px; border-radius: 8px; border: 1px solid #fecdd3; margin-bottom: 15px;">
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label>Call Strike</label>
+                    <input type="number" id="scStrike" value="25700">
+                </div>
+                <div style="flex:1">
+                    <label>Prem (₹)</label>
+                    <input type="number" id="scPrem" value="50">
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label>Put Strike</label>
+                    <input type="number" id="spStrike" value="24500">
+                </div>
+                <div style="flex:1">
+                    <label>Prem (₹)</label>
+                    <input type="number" id="spPrem" value="55">
+                </div>
+            </div>
         </div>
 
-        <div id="hedgePanel" class="hidden" style="background: #ecfdf5; padding: 10px; border-radius: 6px; border: 1px solid #a7f3d0;">
-            <strong style="color: #064e3b;">🟢 Protection (Buy)</strong>
-            <label>Buy Call Strike</label>
-            <input type="number" id="bcStrike" value="26000">
-            <label>Entry Premium (₹)</label>
-            <input type="number" id="bcPrem" value="8">
+        <div class="toggle-btn" onclick="toggleHedge()">
+            <input type="checkbox" id="useHedge" style="pointer-events: none;">
+            <span>Add Iron Condor (Hedge)</span>
+        </div>
 
-            <label>Buy Put Strike</label>
-            <input type="number" id="bpStrike" value="24200">
-            <label>Entry Premium (₹)</label>
-            <input type="number" id="bpPrem" value="10">
+        <div id="hedgePanel" class="hidden" style="background: #ecfdf5; padding: 15px; border-radius: 8px; border: 1px solid #a7f3d0; margin-bottom: 50px;">
+            <h3 style="color: #064e3b; margin-top:0;">🟢 Protection (Buy)</h3>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label>Call Strike</label>
+                    <input type="number" id="bcStrike" value="26000">
+                </div>
+                <div style="flex:1">
+                    <label>Prem (₹)</label>
+                    <input type="number" id="bcPrem" value="8">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label>Put Strike</label>
+                    <input type="number" id="bpStrike" value="24200">
+                </div>
+                <div style="flex:1">
+                    <label>Prem (₹)</label>
+                    <input type="number" id="bpPrem" value="10">
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="main">
         
+        <h2>📊 Live Simulator</h2>
+        
         <div class="sim-panel">
             <div class="sim-control">
-                <label>🔮 Future Nifty Price</label>
-                <input type="range" id="simSpotSlider" min="23000" max="27000" value="25088" step="10" oninput="syncSpotInput(this.value)">
-                <input type="number" id="simSpotInput" value="25088" oninput="syncSpotSlider(this.value)">
+                <label>🔮 Future Price: <span id="simSpotText" style="color:var(--primary); font-weight:bold;">25088</span></label>
+                <input type="range" id="simSpotSlider" min="23000" max="27000" value="25088" step="10" oninput="syncSpot(this.value)">
                 <div id="pctChange" class="badge badge-green">0.00% Change</div>
             </div>
 
             <div class="sim-control">
-                <label>⏳ Time Travel (Days Passed)</label>
+                <label>⏳ Days Passed: <span id="daysPassedVal" style="color:var(--primary); font-weight:bold;">0</span></label>
                 <input type="range" id="daysPassed" min="0" max="5" value="0" step="1" oninput="updateCalc()">
-                <div class="sim-value"><span id="daysPassedVal">0</span> Days Passed</div>
-                <small style="color:#666">Days Remaining: <span id="daysRemVal">5</span></small>
+                <div class="sub-text">Days Remaining: <span id="daysRemVal">5</span></div>
             </div>
 
             <div class="sim-control">
-                <label>⚡ Volatility Change (Vega)</label>
+                <label>⚡ IV Change: <span id="ivVal" style="color:var(--primary); font-weight:bold;">0%</span></label>
                 <input type="range" id="ivChange" min="-10" max="10" value="0" step="0.5" oninput="updateCalc()">
-                <div class="sim-value" id="ivVal">0%</div>
-                <small>Simulated IV: <span id="finalIV">14.0</span>%</small>
+                <div class="sub-text">New IV: <span id="finalIV">14.0</span>%</div>
             </div>
         </div>
 
         <div class="results-grid">
-            <div class="result-card" style="grid-column: span 1; background: #eff6ff; border-color: #bfdbfe;">
-                <h3>Total MTM P/L</h3>
+            <div class="result-card" style="background: #eff6ff; border-color: #bfdbfe; grid-column: span 1 / -1;">
+                <h3 style="margin:5px 0;">Total MTM P/L</h3>
                 <div id="totalPL" class="big-pl val-green">₹ 0</div>
-                <div class="sub-text">Net Profit / Loss</div>
+                <div class="sub-text">Mark-To-Market Profit/Loss</div>
             </div>
 
             <div class="result-card">
-                <h3>Call Leg (Sold)</h3>
-                <div class="sub-text">Strike: <span id="resScStrike"></span></div>
-                <div>Entry: ₹<span id="resScEntry"></span> ➝ Now: <strong id="resScNow"></strong></div>
-                <div id="resScPL" style="font-weight: bold; margin-top: 5px;">₹ 0</div>
+                <h3>Call (Sold)</h3>
+                <div class="sub-text">New Premium</div>
+                <div id="resScNow" style="font-weight:bold; font-size:1.1rem; margin:5px 0;">₹0</div>
+                <div id="resScPL">P/L: ₹0</div>
             </div>
 
             <div class="result-card">
-                <h3>Put Leg (Sold)</h3>
-                <div class="sub-text">Strike: <span id="resSpStrike"></span></div>
-                <div>Entry: ₹<span id="resSpEntry"></span> ➝ Now: <strong id="resSpNow"></strong></div>
-                <div id="resSpPL" style="font-weight: bold; margin-top: 5px;">₹ 0</div>
+                <h3>Put (Sold)</h3>
+                <div class="sub-text">New Premium</div>
+                <div id="resSpNow" style="font-weight:bold; font-size:1.1rem; margin:5px 0;">₹0</div>
+                <div id="resSpPL">P/L: ₹0</div>
             </div>
-
-            <div class="result-card" id="hedgeResultCard" style="opacity: 0.5;">
-                <h3>Hedge Legs</h3>
+            
+            <div class="result-card" id="hedgeResultCard" style="display:none;">
+                <h3>Hedges</h3>
                 <div class="sub-text">Protection Value</div>
-                <div id="resHedgePL" style="font-weight: bold; margin-top: 15px;">₹ 0</div>
+                <div id="resHedgePL" style="font-weight:bold; font-size:1.1rem; margin-top:10px;">₹ 0</div>
             </div>
         </div>
 
         <div class="chart-container">
             <canvas id="plChart"></canvas>
         </div>
+        
+        <div style="height: 50px;"></div>
     </div>
 
     <script>
         // --- 1. Math Functions (Black-Scholes) ---
-
-        // Standard Normal Cumulative Distribution Function
         function stats_norm_cdf(x) {
             var t = 1 / (1 + 0.2316419 * Math.abs(x));
             var d = 0.3989423 * Math.exp(-x * x / 2);
@@ -240,17 +351,13 @@
             return prob;
         }
 
-        // Black-Scholes Formula
         function blackScholes(type, S, K, T, r, sigma) {
-            // S=Spot, K=Strike, T=Time(Years), r=Rate, sigma=IV
             if (T <= 0) {
                 if (type === 'call') return Math.max(0, S - K);
                 else return Math.max(0, K - S);
             }
-
             var d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
             var d2 = d1 - sigma * Math.sqrt(T);
-
             if (type === 'call') {
                 return S * stats_norm_cdf(d1) - K * Math.exp(-r * T) * stats_norm_cdf(d2);
             } else {
@@ -259,78 +366,82 @@
         }
 
         // --- 2. UI Logic ---
-
         let myChart = null;
-        const R_RATE = 0.10; // 10% Risk Free Rate
+        const R_RATE = 0.10; 
 
         function toggleHedge() {
-            const isChecked = document.getElementById('useHedge').checked;
+            const checkbox = document.getElementById('useHedge');
+            // Toggle checkbox state manually if called via div click
+            if(event.target !== checkbox) {
+                checkbox.checked = !checkbox.checked;
+            }
+            
+            const isChecked = checkbox.checked;
             document.getElementById('hedgePanel').classList.toggle('hidden', !isChecked);
-            document.getElementById('hedgeResultCard').style.opacity = isChecked ? '1' : '0.5';
+            
+            // Show/Hide Hedge Result Card
+            const hedgeCard = document.getElementById('hedgeResultCard');
+            hedgeCard.style.display = isChecked ? 'block' : 'none';
+            
+            // Adjust grid columns based on hedge
+            const grid = document.querySelector('.results-grid');
+            if(isChecked && window.innerWidth < 768) {
+               // Mobile: do nothing, grid handles it
+            }
+            
             updateCalc();
         }
 
-        function syncSpotInput(val) {
-            document.getElementById('simSpotInput').value = val;
-            updateCalc();
-        }
-        function syncSpotSlider(val) {
-            document.getElementById('simSpotSlider').value = val;
+        function syncSpot(val) {
+            document.getElementById('simSpotText').innerText = val;
             updateCalc();
         }
 
         function updateCalc() {
-            // Get Inputs
             const lot = parseFloat(document.getElementById('lotSize').value);
             const entrySpot = parseFloat(document.getElementById('entrySpot').value);
             const totalDays = parseFloat(document.getElementById('totalDays').value);
             const entryIV = parseFloat(document.getElementById('entryIV').value) / 100;
 
-            const simSpot = parseFloat(document.getElementById('simSpotInput').value);
+            const simSpot = parseFloat(document.getElementById('simSpotSlider').value);
             const daysPassed = parseFloat(document.getElementById('daysPassed').value);
             const ivChange = parseFloat(document.getElementById('ivChange').value) / 100;
-
             const useHedge = document.getElementById('useHedge').checked;
 
-            // Derived Simulation Vars
+            // Calculations
             const daysRem = Math.max(0, totalDays - daysPassed);
             const T_years = Math.max(0.0001, daysRem / 365.0);
             const simIV = Math.max(0.01, entryIV + ivChange);
 
-            // Update Sim UI Texts
+            // Update UI Labels
             document.getElementById('daysPassedVal').innerText = daysPassed;
             document.getElementById('daysRemVal').innerText = daysRem;
-            document.getElementById('daysPassed').max = totalDays; // Dynamic max
+            document.getElementById('daysPassed').max = totalDays;
             document.getElementById('ivVal').innerText = (ivChange * 100).toFixed(1) + "%";
             document.getElementById('finalIV').innerText = (simIV * 100).toFixed(1);
 
-            // Calculate % Change
             const pct = ((simSpot - entrySpot) / entrySpot) * 100;
             const pctElem = document.getElementById('pctChange');
             pctElem.innerText = pct.toFixed(2) + "% Change";
             pctElem.className = pct >= 0 ? "badge badge-green" : "badge badge-red";
 
-            // --- OPTION PRICING ---
-            
-            // 1. Short Call
+            // Pricing
             const scK = parseFloat(document.getElementById('scStrike').value);
             const scEntry = parseFloat(document.getElementById('scPrem').value);
             const scNew = blackScholes('call', simSpot, scK, T_years, R_RATE, simIV);
             const scPL = (scEntry - scNew) * lot;
 
-            // 2. Short Put
             const spK = parseFloat(document.getElementById('spStrike').value);
             const spEntry = parseFloat(document.getElementById('spPrem').value);
             const spNew = blackScholes('put', simSpot, spK, T_years, R_RATE, simIV);
             const spPL = (spEntry - spNew) * lot;
 
-            // 3. Hedges (If Active)
             let hedgePL = 0;
             if (useHedge) {
                 const bcK = parseFloat(document.getElementById('bcStrike').value);
                 const bcEntry = parseFloat(document.getElementById('bcPrem').value);
                 const bcNew = blackScholes('call', simSpot, bcK, T_years, R_RATE, simIV);
-                hedgePL += (bcNew - bcEntry) * lot; // Bought: (New - Entry)
+                hedgePL += (bcNew - bcEntry) * lot;
 
                 const bpK = parseFloat(document.getElementById('bpStrike').value);
                 const bpEntry = parseFloat(document.getElementById('bpPrem').value);
@@ -340,40 +451,35 @@
 
             const totalPL = scPL + spPL + hedgePL;
 
-            // --- UPDATE RESULTS UI ---
-            document.getElementById('totalPL').innerText = "₹ " + totalPL.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
-            document.getElementById('totalPL').className = "big-pl " + (totalPL >= 0 ? "val-green" : "val-red");
+            // Results UI
+            const plElem = document.getElementById('totalPL');
+            plElem.innerText = "₹ " + Math.round(totalPL).toLocaleString();
+            plElem.className = "big-pl " + (totalPL >= 0 ? "val-green" : "val-red");
 
-            // Leg Details
-            document.getElementById('resScStrike').innerText = scK;
-            document.getElementById('resScEntry').innerText = scEntry.toFixed(1);
             document.getElementById('resScNow').innerText = "₹" + scNew.toFixed(1);
-            document.getElementById('resScPL').innerText = "₹ " + scPL.toFixed(0);
-            document.getElementById('resScPL').className = scPL >= 0 ? "val-green" : "val-red";
+            const scElem = document.getElementById('resScPL');
+            scElem.innerText = "P/L: ₹ " + Math.round(scPL).toLocaleString();
+            scElem.className = scPL >= 0 ? "val-green" : "val-red";
 
-            document.getElementById('resSpStrike').innerText = spK;
-            document.getElementById('resSpEntry').innerText = spEntry.toFixed(1);
             document.getElementById('resSpNow').innerText = "₹" + spNew.toFixed(1);
-            document.getElementById('resSpPL').innerText = "₹ " + spPL.toFixed(0);
-            document.getElementById('resSpPL').className = spPL >= 0 ? "val-green" : "val-red";
+            const spElem = document.getElementById('resSpPL');
+            spElem.innerText = "P/L: ₹ " + Math.round(spPL).toLocaleString();
+            spElem.className = spPL >= 0 ? "val-green" : "val-red";
 
-            document.getElementById('resHedgePL').innerText = "₹ " + hedgePL.toFixed(0);
+            document.getElementById('resHedgePL').innerText = "₹ " + Math.round(hedgePL).toLocaleString();
 
-            // Update Chart
             updateChart(entrySpot, simSpot, T_years, simIV, lot, scK, scEntry, spK, spEntry, useHedge);
         }
 
-        // --- 3. Chart Logic ---
         function updateChart(entrySpot, currentSimSpot, T, iv, lot, scK, scEntry, spK, spEntry, useHedge) {
             const range = 2000;
-            const steps = 40;
-            const start = Math.floor((entrySpot - range/2)/100)*100; 
+            const steps = 30;
+            const start = Math.floor((entrySpot - range/2)/100)*100;
             
             let labels = [];
             let data = [];
-
-            // Get Hedge details if needed
             let bcK=0, bcEntry=0, bpK=0, bpEntry=0;
+
             if(useHedge) {
                 bcK = parseFloat(document.getElementById('bcStrike').value);
                 bcEntry = parseFloat(document.getElementById('bcPrem').value);
@@ -385,7 +491,6 @@
                 let spot = start + (i * (range/steps));
                 labels.push(spot);
 
-                // Calculate P/L at this specific spot price
                 let scP = blackScholes('call', spot, scK, T, R_RATE, iv);
                 let spP = blackScholes('put', spot, spK, T, R_RATE, iv);
                 let val = (scEntry - scP) * lot + (spEntry - spP) * lot;
@@ -398,8 +503,7 @@
                 data.push(val);
             }
 
-            // Current Spot Data Point
-            const currentPL = parseFloat(document.getElementById('totalPL').innerText.replace(/[₹,]/g, ''));
+            const currentPL = parseFloat(document.getElementById('totalPL').innerText.replace(/[₹, ]/g, ''));
 
             if(myChart) {
                 myChart.data.labels = labels;
@@ -413,7 +517,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Projected P/L Curve',
+                            label: 'P/L Curve',
                             data: data,
                             borderColor: '#2563eb',
                             borderWidth: 2,
@@ -422,7 +526,7 @@
                             tension: 0.4
                         },
                         {
-                            label: 'Current Sim',
+                            label: 'Current',
                             data: [{x: currentSimSpot, y: currentPL}],
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
@@ -433,20 +537,19 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { tooltip: { intersect: false, mode: 'index' }, legend: {display: false} },
+                        plugins: { legend: {display: false}, tooltip: {intersect: false, mode: 'index'} },
                         scales: {
-                            x: { title: {display: true, text: 'Nifty Spot Price'} },
-                            y: { title: {display: true, text: 'Profit / Loss (₹)'} }
+                            x: { display: true, ticks: { maxTicksLimit: 5 } },
+                            y: { display: true }
                         }
                     }
                 });
             }
         }
 
-        // Init
-        const allInputs = document.querySelectorAll('input');
-        allInputs.forEach(input => input.addEventListener('input', updateCalc));
-        updateCalc(); // Run once on load
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => input.addEventListener('input', updateCalc));
+        updateCalc();
 
     </script>
 </body>
